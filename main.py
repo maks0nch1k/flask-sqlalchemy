@@ -1,11 +1,10 @@
-from flask import Flask
+from flask import Flask, request, abort, render_template, redirect
 from data import db_session
 from data.users import User
 from data.jobs import Jobs
 from forms.user import RegisterForm, LoginForm
 from forms.job import AddJobForm
-from flask import render_template, redirect
-from flask_login import LoginManager, login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 
 app = Flask(__name__)
@@ -98,6 +97,40 @@ def add_job():
         db_sess.commit()
         return redirect('/')
     return render_template('jobs.html', title='Добавление работы', form=form)
+
+
+@app.route('/addjob/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_jobs(id):
+    form = AddJobForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id).first()
+        if jobs:
+            form.team_leader.data = jobs.team_leader
+            form.description.data = jobs.job
+            form.work_size.data = jobs.work_size
+            form.collaborators.data = jobs.collaborators
+            form.is_finished.data = jobs.is_finished
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id).first()
+        if jobs:
+            jobs.team_leader = form.team_leader.data
+            jobs.job = form.description.data
+            jobs.work_size = form.work_size.data
+            jobs.collaborators = form.collaborators.data
+            jobs.is_finished = form.is_finished.data
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('jobs.html',
+                           title='Редактирование работы',
+                           form=form
+                           )
 
 
 if __name__ == '__main__':
