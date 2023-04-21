@@ -3,6 +3,9 @@
 {% block content %}
 
 <h1 align="center">Works log</h1>
+{% if current_user.is_authenticated %}
+<a href="/addjob" class="btn btn-secondary">Add a job</a>
+{% endif %}
 {% for job_now in jobs %}
   <p>
     <h1>Action {{ loop.index }}</h1>
@@ -30,6 +33,16 @@
         </tr>
       </tbody>
     </table>
+    {% if current_user.is_authenticated and current_user == job_now.user %}
+      <div>
+        <a href="/addjob/{{ job_now.id }}" class="btn btn-warning">
+          Edit the job
+        </a>
+        <a href="/deletejob/{{ job_now.id }}" class="btn btn-danger">
+          Delete the job
+        </a>
+      </div>
+    {% endif %}
   </p>
 {% endfor %}
 

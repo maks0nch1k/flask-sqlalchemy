@@ -93,7 +93,8 @@ def add_job():
         job.work_size = form.work_size.data
         job.collaborators = form.collaborators.data
         job.is_finished = form.is_finished.data
-        db_sess.add(job)
+        current_user.jobs.append(job)
+        db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
     return render_template('jobs.html', title='Добавление работы', form=form)
@@ -105,7 +106,8 @@ def edit_jobs(id):
     form = AddJobForm()
     if request.method == "GET":
         db_sess = db_session.create_session()
-        jobs = db_sess.query(Jobs).filter(Jobs.id == id).first()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          Jobs.user == current_user).first()
         if jobs:
             form.team_leader.data = jobs.team_leader
             form.description.data = jobs.job
@@ -116,7 +118,8 @@ def edit_jobs(id):
             abort(404)
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        jobs = db_sess.query(Jobs).filter(Jobs.id == id).first()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          Jobs.user == current_user).first()
         if jobs:
             jobs.team_leader = form.team_leader.data
             jobs.job = form.description.data
@@ -131,6 +134,20 @@ def edit_jobs(id):
                            title='Редактирование работы',
                            form=form
                            )
+
+
+@app.route('/deletejob/<int:id>', methods=['GET', 'POST'])
+@login_required
+def jobs_delete(id):
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                      Jobs.user == current_user).first()
+    if jobs:
+        db_sess.delete(jobs)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/')
 
 
 if __name__ == '__main__':
