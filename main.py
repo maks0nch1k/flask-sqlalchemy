@@ -1,6 +1,8 @@
-from flask import Flask, request, abort, render_template, redirect
+from flask import Flask, request, abort, render_template, redirect, make_response, jsonify
 from data import db_session, jobs_api, user_api
+from flask_restful import Api
 from data.users import User
+import data.users_resource as users_resource
 from data.jobs import Jobs
 from data.departments import Department
 from forms.user import RegisterForm, LoginForm
@@ -11,6 +13,9 @@ import requests
 
 
 app = Flask(__name__)
+api = Api(app)
+api.add_resource(users_resource.UsersListResource, '/api/v2/users')
+api.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -256,6 +261,11 @@ def departments_delete(id):
     else:
         abort(404)
     return redirect('/departments')
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
 
 
 if __name__ == '__main__':
