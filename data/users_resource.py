@@ -2,7 +2,7 @@ from . import db_session
 from .users import User
 from flask_restful import abort, Resource
 from flask import jsonify
-from users_resource_parser import parser
+from data.users_resource_parser import parser
 
 
 def abort_if_users_not_found(user_id):
@@ -16,8 +16,8 @@ class UsersResource(Resource):
     def get(self, user_id):
         abort_if_users_not_found(User)
         session = db_session.create_session()
-        news = session.query(User).get(user_id)
-        return jsonify({'user': news.to_dict(
+        user = session.query(User).get(user_id)
+        return jsonify({'users': user.to_dict(
             only=('name', 'surname', 'age', 'position',
                   'speciality', 'address', 'email', 'city_from'))})
 
