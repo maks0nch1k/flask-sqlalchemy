@@ -19,7 +19,7 @@ def get_all_users():
         {
             'users':
                 [item.to_dict(only=["id", "surname", "name", "age",
-                                    "position", "speciality", "address", "email"])
+                                    "position", "speciality", "address", "city_from", "email"])
                  for item in users]
         }
     )
@@ -35,7 +35,7 @@ def get_current_user(user_id):
         {
             'user':
                 user.to_dict(only=["id", "surname", "name", "age",
-                                   "position", "speciality", "address", "email"])
+                                   "position", "speciality", "address", "city_from", "email"])
         }
     )
 
@@ -45,7 +45,8 @@ def create_user():
     if not request.json:
         return jsonify({'error': 'Empty request'})
     elif not all(key in request.json for key in
-                 ["surname", "name", "age", "position", "speciality", "address", "hashed_password", "email"]):
+                 ["surname", "name", "age", "position", "speciality",
+                  "address", "city_from", "hashed_password", "email"]):
         return jsonify({'error': 'Bad request'})
 
     db_sess = db_session.create_session()
@@ -57,6 +58,7 @@ def create_user():
         position=request.json['position'],
         speciality=request.json['speciality'],
         address=request.json['address'],
+        city_from=request.json['city_from'],
         hashed_password=request.json["hashed_password"],
         email=request.json['email']
     )
@@ -70,7 +72,7 @@ def edit_user(user_id):
     if not request.json:
         return jsonify({'error': 'Empty request'})
     elif not all(key in ["id", "surname", "name", "age", "position",
-                         "speciality", "address", "hashed_password", "email"]
+                         "speciality", "address", "hashed_password", "city_from", "email"]
                  for key in request.json):
         return jsonify({'error': 'Bad request'})
 
@@ -95,6 +97,8 @@ def edit_user(user_id):
         user.speciality = request.json["speciality"]
     if "address" in request.json:
         user.address = request.json["address"]
+    if "city_from" in request.json:
+        user.city_from = request.json["city_from"]
     if "email" in request.json:
         user.email = request.json["email"]
     if "hashed_password" in request.json:

@@ -7,12 +7,14 @@ from forms.user import RegisterForm, LoginForm
 from forms.job import AddJobForm
 from forms.departament import AddDepartamentForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+import requests
 
 
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
 
 
 def main():
@@ -20,6 +22,36 @@ def main():
     app.register_blueprint(jobs_api.blueprint)
     app.register_blueprint(user_api.blueprint)
     app.run(port=5000, host='127.0.0.1')
+
+
+def geocode(address):
+    geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey={API_KEY}" \
+                       f"&geocode={address}&format=json"
+    response = requests.get(geocoder_request)
+
+    if response:
+        json_response = response.json()
+    else:
+        raise RuntimeError(
+            """Ошибка выполнения запроса:
+            {request}
+            Http статус: {status} ({reason})""".format(
+                request=geocoder_request, status=response.status_code, reason=response.reason))
+    features = json_response["response"]["GeoObjectCollection"]["featureMember"]
+    return features[0]["GeoObject"] if features else None
+
+
+@app.route('/users_show/<int:user_id>')
+def show_city(user_id):
+    user = requests.get(f'http://localhost:5000/api/users/{user_id}').json()
+    coords = geocode(user['user']['city_from'])["Point"]["pos"].replace(' ', ',')
+    response = requests.get(
+        f"http://static-maps.yandex.ru/1.x/?ll={coords}&z=8&l=sat")
+    print(f"http://static-maps.yandex.ru/1.x/?ll={coords}&z=8&l=sat")
+    with open("static/img/city.png", "wb") as file:
+        file.write(response.content)
+
+    return render_template("use_api.html", user=user["user"])
 
 
 @login_manager.user_loader
