@@ -1,48 +1,42 @@
 from requests import get, post, delete
 
 
-# all users
-print(get("http://127.0.0.1:5000/api/v2/users").json())
+# all jobs
+print(get("http://127.0.0.1:5000/api/v2/jobs").json())
 
 # add a user
-print(post("http://127.0.0.1:5000/api/v2/users",
-           json={"name": "User_name_1",
-                 "surname": "User_surname_1",
-                 "age": 23,
-                 "position": "Mars",
-                 "speciality": "programmer",
-                 "address": "qwerty",
-                 "hashed_password": "sdadasdas",
-                 "email": "E@e",
-                 "city_from": "Lima"
+print(post("http://127.0.0.1:5000/api/v2/jobs",
+           json={"team_leader": 3,
+                 "job": "Job1",
+                 "work_size": 23,
+                 "collaborators": "2, 6, 8, 9",
+                 "is_finished": True
                  }).json())
 
-# current user
-print(get("http://127.0.0.1:5000/api/v2/users/2").json())
+# current job
+print(get("http://127.0.0.1:5000/api/v2/jobs/2").json())
 
-# delete user
-print(delete("http://127.0.0.1:5000/api/v2/users/6"))
+# delete job
+print(delete("http://127.0.0.1:5000/api/v2/jobs/2").json())
 
-# wrong add user (missing password and not int age)
-print(post("http://127.0.0.1:5000/api/v2/users",
-           json={"name": "User_name_1",
-                 "surname": "User_surname_1",
-                 "age": "sdadasdas",
-                 "position": "Mars",
-                 "speciality": "programmer",
-                 "address": "qwerty",
-                 "email": "E@e",
-                 "city_from": "Lima"
-                 }).json())
+# missing id
+print(delete("http://127.0.0.1:5000/api/v2/jobs/4767867654").json())
 
-# get missing user
-print(get("http://127.0.0.1:5000/api/v2/users/445645456456").json())
+# str instead of int
+print(delete("http://127.0.0.1:5000/api/v2/jobs/fdadsa").json())
 
-# delete missing user
-print(delete("http://127.0.0.1:5000/api/v2/users/44456456456"))
+# absence of a parametr
+print(post('http://127.0.0.1:5000/api/v2/jobs',
+           json={"id": 13,
+                 'team_leader': 5,
+                 "collaborators": "1, 3, 4, 7",
+                 "is_finished": 1}).json())
 
-# get user not int id
-print(get("http://127.0.0.1:5000/api/v2/users/asdasda").json())
-
-# delete user not int id
-print(delete("http://127.0.0.1:5000/api/v2/users/sadasdad"))
+# used id
+print(post('http://127.0.0.1:5000/api/v2/jobs',
+           json={"id": 1,
+                 'team_leader': 5,
+                 'job': 3,
+                 "work_size": 343,
+                 "collaborators": "1, 3, 4, 7",
+                 "is_finished": 1}).json())
